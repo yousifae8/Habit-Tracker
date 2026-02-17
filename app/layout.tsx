@@ -4,7 +4,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 // import "./globals.css";
 import Providers from "./components/providers";
-import {ThemeProvider} from "@mui/material"
+import {ThemeProvider} from "@mui/material/styles"
 
 import theme from "./theme";
 
@@ -29,13 +29,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-        <ThemeProvider theme={theme}>
     <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
-          <Providers>{children}</Providers>
+      <ThemeProvider theme={theme}>
+           <Providers>
+         {children}
+      </Providers>
+    </ThemeProvider>
         </body>
       </html>
-    </ThemeProvider>
         
   );
 }
