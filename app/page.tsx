@@ -21,11 +21,11 @@ export default function Home() {
     <div className={`${styles.container} ${scrolled ? styles.scrolled : ""}`}>
       <main className={styles.main}>
         <div>
-          <Typography variant="h1" gutterBottom color="common.white">
+          <Typography fontSize={"84px"} gutterBottom color="common.white">
             <div className={styles.title}>{title}</div>
           </Typography>
 
-          <Typography variant="h4" gutterBottom color="white">
+          <Typography variant="h1" gutterBottom color="white">
             Start To Build The Best Version Of Yourself
           </Typography>
         </div>
