@@ -2,7 +2,7 @@
 
 import styles from "./page.module.css";
 import Link from "next/link";
-import { Button } from "@mui/material";
+import { Button ,Typography} from "@mui/material";
 import { TextField } from "@mui/material";
 import { Container, Box } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
@@ -235,12 +235,16 @@ const Register = () => {
               type="submit"
               color="primary"
               variant="contained"
-              sx={{ width: 400, marginTop: 15 }}
+              sx={{  marginTop: 15 }}
+              fullWidth
               disabled={!formik.isValid || formik.isSubmitting}
             >
               Submit
             </Button>
           </Box>
+            <Box sx={{mt:4}}>
+                                 <Typography>Have an account?<Link href={"/login"}>login</Link></Typography> 
+                              </Box>
         </form>
       </Box>
     </Container>
