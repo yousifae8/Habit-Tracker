@@ -34,7 +34,9 @@ export default function Home() {
         <div className={styles.buttons}>
           <Link href={"/register"}>
           <Button sx={{padding:3, width:200, fontWeight: "bold", height:70, fontSize:20, color:"white",border:"3px solid white "}} className={styles.btn}>Register</Button></Link>
+          <Link href={"/login"}>
           <Button sx={{padding:3,width:200,fontWeight: "bold",  height:70, fontSize:20 , color:"white", border:"3px solid white "}} className={styles.btn}>Login</Button>
+          </Link>
         </div>
       </main>
     </div>
