@@ -4,20 +4,20 @@ export interface CheckIn {
   id: string;
   habit_id: string;
   user_id: string;
-  checkin_date: string; // YYYY-MM-DD
+  checkin_date: string;
   status: boolean;
 }
 
 export type CreateCheckInInput = {
   habitId: string;
-  date?: string; // YYYY-MM-DD, defaults to today
+  date?: string;
   status: boolean;
 };
 
 export type ToggleCheckInInput = {
   habitId: string;
   status: boolean;
-  date?: string; // YYYY-MM-DD, defaults to today
+  date?: string;
 };
 
 const formatDate = (value?: string) => {
