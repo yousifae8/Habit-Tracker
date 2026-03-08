@@ -10,10 +10,10 @@ export interface Habit {
 
 type CreateHabitInput = Pick<Habit, "name" | "description" | "frequency">;
 
-type UpdateHabitInput = {
-    id: Habit["id"];
-    updates: Partial<Pick<Habit, "name" | "description" | "frequency">>;
-}
+export type UpdateHabitInput = {
+  id: Habit["id"];
+  updates: Partial<Pick<Habit, "name" | "description" | "frequency">>;
+};
 
 type DeleteHabitInput = {
     id: Habit["id"];
@@ -30,7 +30,16 @@ export const createHabit = async (habit: CreateHabitInput) => {
 
   const { data: insertData, error: insertError } = await supabase
     .from("habits")
-    .insert([{name: habit.name, description: habit.description, frequency: habit.frequency, user_id: user.id}]);
+    .insert([
+      {
+        name: habit.name,
+        description: habit.description,
+        frequency: habit.frequency,
+        user_id: user.id,
+      },
+    ])
+    .select()
+    .single();
   if (insertError) throw insertError;
   return insertData;
 };
@@ -67,7 +76,9 @@ export const updateHabit = async ({id, updates}: UpdateHabitInput) => {
     .from("habits")
     .update(updates)
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select()
+    .single();
   if (updateHabitsError) {
     throw updateHabitsError;
   }
