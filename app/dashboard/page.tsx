@@ -3,6 +3,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import EditIcon from "@mui/icons-material/Edit";
+import LogoutIcon from "@mui/icons-material/Logout";
 import {
   Alert,
   Box,
@@ -33,8 +34,11 @@ import {
   Habit,
   updateHabit,
 } from "../services/habits";
+import { supabase } from "../supabase";
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
+  const router = useRouter();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +52,7 @@ const Dashboard = () => {
   const [togglingCheckInId, setTogglingCheckInId] = useState<string | null>(
     null,
   );
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const todayDate = new Date().toISOString().slice(0, 10);
   const todayDateLabel = new Date().toLocaleDateString(undefined, {
     weekday: "long",
@@ -177,6 +182,23 @@ const Dashboard = () => {
     }
   };
 
+  const handleLogout = async () => {
+    setActionError(null);
+    setIsLoggingOut(true);
+    try {
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        throw signOutError;
+      }
+      router.push("/login");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to logout";
+      setActionError(message);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box
@@ -190,13 +212,24 @@ const Dashboard = () => {
         <Typography variant="h4" component="h1">
           Dashboard
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setIsCreateOpen(true)}
-        >
-          Add Habit
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setIsCreateOpen(true)}
+          >
+            Add Habit
+          </Button>
+          <Button
+            variant="outlined"
+            color="inherit"
+            startIcon={<LogoutIcon />}
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Logging out..." : "Logout"}
+          </Button>
+        </Box>
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Today: {todayDateLabel}
