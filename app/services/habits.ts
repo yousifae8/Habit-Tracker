@@ -6,6 +6,7 @@ export interface Habit {
   description: string;
   frequency: string;
   user_id: string;
+  is_active: boolean;
 }
 
 type CreateHabitInput = Pick<Habit, "name" | "description" | "frequency">;
@@ -16,8 +17,8 @@ export type UpdateHabitInput = {
 };
 
 type DeleteHabitInput = {
-    id: Habit["id"];
-}
+  id: Habit["id"];
+};
 
 export const createHabit = async (habit: CreateHabitInput) => {
   const {
@@ -36,6 +37,7 @@ export const createHabit = async (habit: CreateHabitInput) => {
         description: habit.description,
         frequency: habit.frequency,
         user_id: user.id,
+        is_active: true,
       },
     ])
     .select()
@@ -56,7 +58,8 @@ export const getHabits = async () => {
   const { data: getHabitsData, error: getHabitsError } = await supabase
     .from("habits")
     .select("*")
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("is_active", true);
   if (getHabitsError) {
     throw getHabitsError;
   }
@@ -72,20 +75,17 @@ export const updateHabit = async ({id, updates}: UpdateHabitInput) => {
   if (error) throw error;
   if (!user) throw new Error("User not found");
 
-  const { data: updateHabitsData, error: updateHabitsError } = await supabase
+  const { error: updateHabitsError } = await supabase
     .from("habits")
     .update(updates)
     .eq("id", id)
-    .eq("user_id", user.id)
-    .select()
-    .single();
+    .eq("user_id", user.id);
   if (updateHabitsError) {
     throw updateHabitsError;
   }
-  return updateHabitsData;
 };
 
-export const deleteHabit = async ({ id }: DeleteHabitInput) => {
+export const archiveHabit = async ({ id }: DeleteHabitInput) => {
   const {
     data: { user },
     error,
@@ -94,13 +94,12 @@ export const deleteHabit = async ({ id }: DeleteHabitInput) => {
   if (error) throw error;
   if (!user) throw new Error("User not found");
 
-  const { data: deleteHabitsData, error: deleteHabitsError } = await supabase
+  const { error: archivedHabitError } = await supabase
     .from("habits")
-    .delete()
+    .update({ is_active: false })
     .eq("id", id)
     .eq("user_id", user.id);
-  if (deleteHabitsError) {
-    throw deleteHabitsError;
+  if (archivedHabitError) {
+    throw archivedHabitError;
   }
-  return deleteHabitsData;
 };
