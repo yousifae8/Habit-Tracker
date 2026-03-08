@@ -90,17 +90,26 @@ const Dashboard = () => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  const handleCreateHabit = async (values: { name: string; description: string }) => {
+  const handleCreateHabit = async (values: {
+    name: string;
+    description: string;
+    category: string;
+  }) => {
     setActionError(null);
     const createdHabit = await createHabit({
       name: values.name,
       description: values.description,
+      category: values.category,
       frequency: "daily",
     });
     setHabits((prev) => [createdHabit, ...prev]);
   };
 
-  const handleUpdateHabit = async (values: { name: string; description: string }) => {
+  const handleUpdateHabit = async (values: {
+    name: string;
+    description: string;
+    category: string;
+  }) => {
     setActionError(null);
     if (!editingHabit) {
       return;
@@ -110,12 +119,18 @@ const Dashboard = () => {
       updates: {
         name: values.name,
         description: values.description,
+        category: values.category,
       },
     });
     setHabits((prev) =>
       prev.map((habit) =>
         habit.id === editingHabit.id
-          ? { ...habit, name: values.name, description: values.description }
+          ? {
+              ...habit,
+              name: values.name,
+              description: values.description,
+              category: values.category,
+            }
           : habit,
       ),
     );
@@ -251,7 +266,7 @@ const Dashboard = () => {
               <ListItem key={habit.id} divider>
                 <ListItemText
                   primary={habit.name}
-                  secondary={habit.description || "No description"}
+                  secondary={`${habit.description || "No description"}${habit.category ? ` • ${habit.category}` : ""}`}
                 />
                 <FormControlLabel
                   sx={{ mr: 2 }}
@@ -323,6 +338,7 @@ const Dashboard = () => {
             initialValues={{
               name: editingHabit?.name ?? "",
               description: editingHabit?.description ?? "",
+              category: editingHabit?.category ?? "Health",
             }}
             submitLabel="Save Changes"
             onSubmit={handleUpdateHabit}

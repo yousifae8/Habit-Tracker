@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Box, Button, TextField } from "@mui/material";
+import { Alert, Box, Button, TextField, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
 import { useState } from "react";
 import * as yup from "yup";
@@ -16,12 +16,16 @@ type HabitFormProps = {
 type FormValues = {
   name: string;
   description: string;
+  category: string;
 };
 
 const validationSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
   description: yup.string().optional(),
+  category: yup.string().required("Category is required"),
 });
+
+const categories = ["Health", "Learning", "Fitness", "Productivity", "Mindfulness", "Other"];
 
 const HabitForm = ({
   initialValues,
@@ -34,7 +38,7 @@ const HabitForm = ({
 
   const formik = useFormik<FormValues>({
     enableReinitialize: true,
-    initialValues: initialValues ?? { name: "", description: "" },
+    initialValues: initialValues ?? { name: "", description: "", category: "Health" },
     validationSchema,
     onSubmit: async (values, helpers) => {
       setSubmitError(null);
@@ -42,6 +46,7 @@ const HabitForm = ({
         await onSubmit({
           name: values.name.trim(),
           description: values.description.trim(),
+          category: values.category,
         });
         helpers.resetForm();
         onSuccess?.();
@@ -87,6 +92,25 @@ const HabitForm = ({
         error={formik.touched.description && Boolean(formik.errors.description)}
         helperText={formik.touched.description ? formik.errors.description : ""}
       />
+
+      <TextField
+        select
+        fullWidth
+        id="habit-category"
+        name="category"
+        label="Category"
+        value={formik.values.category}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.category && Boolean(formik.errors.category)}
+        helperText={formik.touched.category ? formik.errors.category : ""}
+      >
+        {categories.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </TextField>
 
       <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
         <Button type="button" variant="text" onClick={onCancel}>

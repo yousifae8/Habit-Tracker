@@ -5,15 +5,19 @@ export interface Habit {
   name: string;
   description: string;
   frequency: string;
+  category?: string;
   user_id: string;
   is_active: boolean;
 }
 
-type CreateHabitInput = Pick<Habit, "name" | "description" | "frequency">;
+type CreateHabitInput = Pick<
+  Habit,
+  "name" | "description" | "frequency" | "category"
+>;
 
 export type UpdateHabitInput = {
   id: Habit["id"];
-  updates: Partial<Pick<Habit, "name" | "description" | "frequency">>;
+  updates: Partial<Pick<Habit, "name" | "description" | "frequency" | "category">>;
 };
 
 type DeleteHabitInput = {
@@ -36,6 +40,7 @@ export const createHabit = async (habit: CreateHabitInput) => {
         name: habit.name,
         description: habit.description,
         frequency: habit.frequency,
+        category: habit.category,
         user_id: user.id,
         is_active: true,
       },
@@ -66,7 +71,7 @@ export const getHabits = async () => {
   return getHabitsData;
 };
 
-export const updateHabit = async ({id, updates}: UpdateHabitInput) => {
+export const updateHabit = async ({ id, updates }: UpdateHabitInput) => {
   const {
     data: { user },
     error,
