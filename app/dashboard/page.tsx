@@ -7,11 +7,13 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Container,
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   List,
   ListItem,
   ListItemText,
@@ -19,6 +21,11 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import HabitForm from "../components/HabitForm";
+import {
+  CheckIn,
+  getCheckInsByDate,
+  toggleDailyCheckIn,
+} from "../services/checkins";
 import {
   archiveHabit,
   createHabit,
@@ -35,13 +42,36 @@ const Dashboard = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [checkInsByHabitId, setCheckInsByHabitId] = useState<
+    Record<string, CheckIn>
+  >({});
+  const [togglingCheckInId, setTogglingCheckInId] = useState<string | null>(
+    null,
+  );
+  const todayDate = new Date().toISOString().slice(0, 10);
+  const todayDateLabel = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
-  const loadHabits = useCallback(async () => {
+  const mapCheckInsByHabitId = (checkIns: CheckIn[]) =>
+    checkIns.reduce<Record<string, CheckIn>>((acc, checkIn) => {
+      acc[checkIn.habit_id] = checkIn;
+      return acc;
+    }, {});
+
+  const loadDashboardData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getHabits();
-      setHabits(data ?? []);
+      const [habitsData, checkInsData] = await Promise.all([
+        getHabits(),
+        getCheckInsByDate(todayDate),
+      ]);
+      setHabits(habitsData ?? []);
+      setCheckInsByHabitId(mapCheckInsByHabitId(checkInsData));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load habits";
@@ -52,8 +82,8 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    loadHabits();
-  }, [loadHabits]);
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const handleCreateHabit = async (values: { name: string; description: string }) => {
     setActionError(null);
@@ -101,6 +131,52 @@ const Dashboard = () => {
     }
   };
 
+  const handleToggleCheckIn = async (habitId: string, nextStatus: boolean) => {
+    setActionError(null);
+    setTogglingCheckInId(habitId);
+
+    const previousCheckIn = checkInsByHabitId[habitId];
+    const optimisticCheckIn: CheckIn = previousCheckIn
+      ? { ...previousCheckIn, status: nextStatus }
+      : {
+          id: `temp-${habitId}`,
+          habit_id: habitId,
+          user_id: "",
+          checkin_date: todayDate,
+          status: nextStatus,
+        };
+
+    setCheckInsByHabitId((prev) => ({
+      ...prev,
+      [habitId]: optimisticCheckIn,
+    }));
+
+    try {
+      const updatedCheckIn = await toggleDailyCheckIn({
+        habitId,
+        status: nextStatus,
+        date: todayDate,
+      });
+      setCheckInsByHabitId((prev) => ({
+        ...prev,
+        [habitId]: updatedCheckIn,
+      }));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update check-in";
+      setActionError(message);
+      setCheckInsByHabitId((prev) => {
+        if (!previousCheckIn) {
+          const { [habitId]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [habitId]: previousCheckIn };
+      });
+    } finally {
+      setTogglingCheckInId(null);
+    }
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box
@@ -122,6 +198,9 @@ const Dashboard = () => {
           Add Habit
         </Button>
       </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Today: {todayDateLabel}
+      </Typography>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
@@ -140,6 +219,19 @@ const Dashboard = () => {
                 <ListItemText
                   primary={habit.name}
                   secondary={habit.description || "No description"}
+                />
+                <FormControlLabel
+                  sx={{ mr: 2 }}
+                  control={
+                    <Checkbox
+                      checked={Boolean(checkInsByHabitId[habit.id]?.status)}
+                      onChange={(event) =>
+                        handleToggleCheckIn(habit.id, event.target.checked)
+                      }
+                      disabled={togglingCheckInId === habit.id}
+                    />
+                  }
+                  label="Done today"
                 />
                 <Button
                   variant="outlined"
