@@ -111,9 +111,14 @@ const Register = () => {
           mt: 20,
           borderRadius: 1,
           boxShadow: 5,
-          paddingTop: 10,
+          paddingTop: 5,
         }}
       >
+        <Box sx={{ textAlign: "center", mb: 3 }}>
+          <Typography fontSize={32} sx={{ textAlign: "center" }}>
+            Register
+          </Typography>
+        </Box>  
         <form onSubmit={formik.handleSubmit}>
           <Grid
             container
@@ -210,7 +215,7 @@ const Register = () => {
                 />
               </Box>
             </Grid>
-            <Box>
+            <Box sx={{ fontSize: 12 }}>
               <Checkbox
                 required
                 name="terms"
@@ -235,14 +240,14 @@ const Register = () => {
               type="submit"
               color="primary"
               variant="contained"
-              sx={{  marginTop: 15 }}
+              sx={{  marginTop: 5 }}
               fullWidth
               disabled={!formik.isValid || formik.isSubmitting}
             >
               Submit
             </Button>
           </Box>
-            <Box sx={{mt:4}}>
+            <Box sx={{mt:1}}>
                                  <Typography>Have an account?<Link href={"/login"}>login</Link></Typography> 
                               </Box>
         </form>
