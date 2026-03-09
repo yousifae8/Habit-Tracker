@@ -17,10 +17,12 @@ type CreateHabitInput = Pick<
 
 export type UpdateHabitInput = {
   id: Habit["id"];
-  updates: Partial<Pick<Habit, "name" | "description" | "frequency" | "category">>;
+  updates: Partial<
+    Pick<Habit, "name" | "description" | "frequency" | "category">
+  >;
 };
 
-type DeleteHabitInput = {
+type HabitActionInput = {
   id: Habit["id"];
 };
 
@@ -51,7 +53,7 @@ export const createHabit = async (habit: CreateHabitInput) => {
   return insertData;
 };
 
-export const getHabits = async () => {
+export const getHabits = async (isActive = true) => {
   const {
     data: { user },
     error,
@@ -64,7 +66,7 @@ export const getHabits = async () => {
     .from("habits")
     .select("*")
     .eq("user_id", user.id)
-    .eq("is_active", true);
+    .eq("is_active", isActive);
   if (getHabitsError) {
     throw getHabitsError;
   }
@@ -90,7 +92,7 @@ export const updateHabit = async ({ id, updates }: UpdateHabitInput) => {
   }
 };
 
-export const archiveHabit = async ({ id }: DeleteHabitInput) => {
+export const archiveHabit = async ({ id }: HabitActionInput) => {
   const {
     data: { user },
     error,
@@ -106,5 +108,24 @@ export const archiveHabit = async ({ id }: DeleteHabitInput) => {
     .eq("user_id", user.id);
   if (archivedHabitError) {
     throw archivedHabitError;
+  }
+};
+
+export const restoreHabit = async ({ id }: HabitActionInput) => {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) throw error;
+  if (!user) throw new Error("User not found");
+
+  const { error: restoreHabitError } = await supabase
+    .from("habits")
+    .update({ is_active: true })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (restoreHabitError) {
+    throw restoreHabitError;
   }
 };
