@@ -129,3 +129,22 @@ export const restoreHabit = async ({ id }: HabitActionInput) => {
     throw restoreHabitError;
   }
 };
+export const deleteHabit = async ({ id }: HabitActionInput) => {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) throw error;
+  if (!user) throw new Error("User not found");
+
+  const { error: deleteHabitError } = await supabase
+    .from("habits")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (deleteHabitError) {
+    throw deleteHabitError;
+  }
+};

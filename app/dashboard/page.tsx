@@ -12,7 +12,9 @@ import {
   CircularProgress,
   Container,
   Dialog,
+  DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Tab,
   Tabs,
@@ -36,6 +38,7 @@ import {
   getHabits,
   Habit,
   restoreHabit,
+  deleteHabit,
   updateHabit,
 } from "../services/habits";
 import { supabase } from "../supabase";
@@ -53,6 +56,8 @@ const Dashboard = () => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [restoringId, setRestoringId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null);
   const [stats, setStats] = useState({ totalCompletions: 0, currentStreak: 0 });
   const [habitStats, setHabitStats] = useState<Record<string, HabitStats>>({});
   const [checkInsByHabitId, setCheckInsByHabitId] = useState<
@@ -216,6 +221,22 @@ const Dashboard = () => {
       setActionError(message);
     } finally {
       setRestoringId(null);
+    }
+  };
+
+  const handleDeleteHabit = async (habitId: string) => {
+    setActionError(null);
+    setDeletingId(habitId);
+    try {
+      await deleteHabit({ id: habitId });
+      setArchivedHabits((prev) => prev.filter((h) => h.id !== habitId));
+      setHabitToDelete(null); // Close dialog
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete habit";
+      setActionError(message);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -461,14 +482,26 @@ const Dashboard = () => {
                       {habit.description || "No description"}
                     </Typography>
                   </Box>
-                  <Button
-                    variant="outlined"
-                    startIcon={<RestoreFromTrashIcon />}
-                    onClick={() => handleRestoreHabit(habit.id)}
-                    disabled={restoringId === habit.id}
-                  >
-                    {restoringId === habit.id ? "Restoring..." : "Restore"}
-                  </Button>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<RestoreFromTrashIcon />}
+                      onClick={() => handleRestoreHabit(habit.id)}
+                      disabled={restoringId === habit.id}
+                      sx={{ borderRadius: 2, textTransform: "none" }}
+                    >
+                      {restoringId === habit.id ? "Restoring..." : "Restore"}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => setHabitToDelete(habit)}
+                      disabled={deletingId === habit.id}
+                      sx={{ borderRadius: 2, textTransform: "none" }}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
                 </Box>
               ))}
             </Box>
@@ -527,6 +560,33 @@ const Dashboard = () => {
             onCancel={() => setEditingHabit(null)}
           />
         </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(habitToDelete)}
+        onClose={() => setHabitToDelete(null)}
+      >
+        <DialogTitle>Delete Habit?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to permanently delete <strong>{habitToDelete?.name}</strong>? 
+            This action cannot be undone and all historical data will be lost.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setHabitToDelete(null)} disabled={Boolean(deletingId)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => habitToDelete && handleDeleteHabit(habitToDelete.id)}
+            color="error"
+            variant="contained"
+            disabled={Boolean(deletingId)}
+            sx={{ borderRadius: 2 }}
+          >
+            {deletingId ? "Deleting..." : "Permanently Delete"}
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );
