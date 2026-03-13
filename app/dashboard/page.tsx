@@ -162,20 +162,26 @@ const Dashboard = () => {
     setArchivingId(habitId);
     try {
       await archiveHabit({ id: habitId });
-      setActiveHabits((prev) => {
-        const habitToArchive = prev.find((habit) => habit.id === habitId);
-        if (habitToArchive) {
-          setArchivedHabits((archived) => [
-            { ...habitToArchive, is_active: false },
-            ...archived,
-          ]);
-        }
-        return prev.filter((habit) => habit.id !== habitId);
-      });
-      setCheckInsByHabitId((prev) => {
-        const { [habitId]: _, ...rest } = prev;
-        return rest;
-      });
+
+      // Find the habit to move
+      const habitToArchive = activeHabits.find((h) => h.id === habitId);
+
+      if (habitToArchive) {
+        // 1. Add to archived habits (prevent duplicates)
+        setArchivedHabits((prev) => {
+          if (prev.some((h) => h.id === habitId)) return prev;
+          return [{ ...habitToArchive, is_active: false }, ...prev];
+        });
+
+        // 2. Remove from active habits
+        setActiveHabits((prev) => prev.filter((h) => h.id !== habitId));
+
+        // 3. Cleanup check-ins state for this habit
+        setCheckInsByHabitId((prev) => {
+          const { [habitId]: _, ...rest } = prev;
+          return rest;
+        });
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to archive habit";
@@ -190,16 +196,20 @@ const Dashboard = () => {
     setRestoringId(habitId);
     try {
       await restoreHabit({ id: habitId });
-      setArchivedHabits((prev) => {
-        const habitToRestore = prev.find((habit) => habit.id === habitId);
-        if (habitToRestore) {
-          setActiveHabits((active) => [
-            { ...habitToRestore, is_active: true },
-            ...active,
-          ]);
-        }
-        return prev.filter((habit) => habit.id !== habitId);
-      });
+
+      // Find the habit to move
+      const habitToRestore = archivedHabits.find((h) => h.id === habitId);
+
+      if (habitToRestore) {
+        // 1. Add to active habits (prevent duplicates)
+        setActiveHabits((prev) => {
+          if (prev.some((h) => h.id === habitId)) return prev;
+          return [{ ...habitToRestore, is_active: true }, ...prev];
+        });
+
+        // 2. Remove from archived habits
+        setArchivedHabits((prev) => prev.filter((h) => h.id !== habitId));
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to restore habit";
