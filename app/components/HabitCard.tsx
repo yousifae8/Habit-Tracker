@@ -42,18 +42,28 @@ export default function HabitCard({
     <Card
       sx={{
         mb: 2,
-        p: 2,
+        p: 2.5,
         display: "flex",
         alignItems: "center",
-        borderRadius: (theme) => `${theme.shape.borderRadius}px`,
-        transition: "all 0.2s ease-in-out",
-        border: (theme) =>
-          `1px solid ${isDone ? theme.palette.success.light : theme.palette.divider}`,
-        boxShadow: (theme) => (isDone ? theme.shadows[2] : theme.shadows[1]),
-        backgroundColor: isDone ? "rgba(76, 175, 80, 0.02)" : "background.paper",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        border: "1px solid",
+        borderColor: isDone ? "success.light" : "divider",
+        backgroundColor: "background.paper",
+        position: "relative",
+        overflow: "hidden",
+        "&::before": isDone ? {
+          content: '""',
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: "4px",
+          backgroundColor: "success.main",
+        } : {},
         "&:hover": {
-          boxShadow: (theme) => theme.shadows[3],
-          transform: "translateY(-2px)",
+          boxShadow: (theme) => theme.shadows[4],
+          transform: "translateY(-4px)",
+          borderColor: isDone ? "success.main" : "primary.light",
         },
       }}
     >

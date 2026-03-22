@@ -89,7 +89,7 @@ export default function StatsOverview({
           value={`${completedToday}/${totalHabits}`}
           subValue={totalHabits > 0 ? `${Math.round(progressValue)}% completed` : "No habits added"}
           icon={<TodayIcon />}
-          color="#3f51b5"
+          color="#6366F1" // Indigo Breeze Primary
           progress={progressValue}
         />
       </Grid>
@@ -99,7 +99,7 @@ export default function StatsOverview({
           value={`${currentStreak} days`}
           subValue="Keep it going!"
           icon={<LocalFireDepartmentIcon />}
-          color="#f44336"
+          color="#F59E0B" // Amber for streaks
         />
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
@@ -108,7 +108,7 @@ export default function StatsOverview({
           value={totalCompletions}
           subValue="All-time stats"
           icon={<CheckCircleIcon />}
-          color="#4caf50"
+          color="#10B981" // Indigo Breeze Success (Emerald)
         />
       </Grid>
     </Grid>

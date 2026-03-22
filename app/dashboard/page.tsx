@@ -168,20 +168,16 @@ const Dashboard = () => {
     try {
       await archiveHabit({ id: habitId });
 
-      // Find the habit to move
       const habitToArchive = activeHabits.find((h) => h.id === habitId);
 
       if (habitToArchive) {
-        // 1. Add to archived habits (prevent duplicates)
         setArchivedHabits((prev) => {
           if (prev.some((h) => h.id === habitId)) return prev;
           return [{ ...habitToArchive, is_active: false }, ...prev];
         });
 
-        // 2. Remove from active habits
         setActiveHabits((prev) => prev.filter((h) => h.id !== habitId));
 
-        // 3. Cleanup check-ins state for this habit
         setCheckInsByHabitId((prev) => {
           const { [habitId]: _, ...rest } = prev;
           return rest;
@@ -202,17 +198,14 @@ const Dashboard = () => {
     try {
       await restoreHabit({ id: habitId });
 
-      // Find the habit to move
       const habitToRestore = archivedHabits.find((h) => h.id === habitId);
 
       if (habitToRestore) {
-        // 1. Add to active habits (prevent duplicates)
         setActiveHabits((prev) => {
           if (prev.some((h) => h.id === habitId)) return prev;
           return [{ ...habitToRestore, is_active: true }, ...prev];
         });
 
-        // 2. Remove from archived habits
         setArchivedHabits((prev) => prev.filter((h) => h.id !== habitId));
       }
     } catch (err) {
@@ -230,7 +223,7 @@ const Dashboard = () => {
     try {
       await deleteHabit({ id: habitId });
       setArchivedHabits((prev) => prev.filter((h) => h.id !== habitId));
-      setHabitToDelete(null); // Close dialog
+      setHabitToDelete(null);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete habit";
@@ -270,7 +263,6 @@ const Dashboard = () => {
         ...prev,
         [habitId]: updatedCheckIn,
       }));
-      // Refresh stats
       const statsData = await getSummaryStats();
       setStats(statsData);
     } catch (err) {
@@ -311,8 +303,7 @@ const Dashboard = () => {
       <Box
         sx={{
           minHeight: "100vh",
-          background: (theme) =>
-            `linear-gradient(135deg, ${theme.palette.secondary.light} 0%, ${theme.palette.secondary.dark} 100%)`,
+          backgroundColor: "background.default",
           py: 4,
         }}
       >
@@ -331,12 +322,15 @@ const Dashboard = () => {
                 sx={{
                   fontWeight: 800,
                   color: "primary.main",
-                  letterSpacing: "-0.01rem",
+                  letterSpacing: "-0.02em",
+                  background: "linear-gradient(45deg, #6366F1 30%, #4F46E5 90%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
                 }}
               >
                 Habit Tracker
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
                 {todayDateLabel}
               </Typography>
             </Box>
