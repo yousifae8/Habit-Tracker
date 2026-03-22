@@ -1,20 +1,20 @@
 "use client"
 
 // import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 // import "./globals.css";
 import Providers from "./components/providers";
 import {ThemeProvider} from "@mui/material/styles"
 
 import theme from "./theme";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <body className={`${outfit.variable} ${inter.variable}`}>
       <ThemeProvider theme={theme}>
            <Providers>
          {children}

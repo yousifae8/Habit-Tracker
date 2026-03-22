@@ -7,9 +7,8 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 export default function Providers({children}: { children: React.ReactNode }) {
     return (
         <AppRouterCacheProvider options={{key: "mui"}}>
-            <CssBaseline>
+            <CssBaseline />
             {children}
-            </CssBaseline>
         </AppRouterCacheProvider>
     )
 }
