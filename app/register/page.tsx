@@ -64,6 +64,8 @@ const Register = () => {
           options: {
             data: {
               name: values.name,
+              terms_accepted: values.terms,
+              terms_accepted_at: new Date().toISOString(),
             },
           },
         });
