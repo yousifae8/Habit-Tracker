@@ -8,13 +8,13 @@ export interface CheckIn {
   status: boolean;
 }
 
-export type CreateCheckInInput = {
+type CreateCheckInInput = {
   habitId: string;
   date?: string;
   status: boolean;
 };
 
-export type ToggleCheckInInput = {
+type ToggleCheckInInput = {
   habitId: string;
   status: boolean;
   date?: string;
@@ -34,11 +34,7 @@ const assertDateIsEditable = (date: string) => {
   }
 };
 
-export const createCheckIn = async ({
-  habitId,
-  date,
-  status,
-}: CreateCheckInInput) => {
+const createCheckIn = async ({ habitId, date, status }: CreateCheckInInput) => {
   const checkinDate = formatDate(date);
   assertDateIsEditable(checkinDate);
 

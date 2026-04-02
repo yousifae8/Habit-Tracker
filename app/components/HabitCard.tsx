@@ -105,7 +105,6 @@ export default function HabitCard({
         )}
 
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-          {/* Example static badges for now - ideally these come from the stats */}
           <Chip
             size="small"
             icon={<LocalFireDepartmentIcon sx={{ fontSize: "14px !important" }} />}

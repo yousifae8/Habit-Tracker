@@ -15,7 +15,7 @@ type CreateHabitInput = Pick<
   "name" | "description" | "frequency" | "category"
 >;
 
-export type UpdateHabitInput = {
+type UpdateHabitInput = {
   id: Habit["id"];
   updates: Partial<
     Pick<Habit, "name" | "description" | "frequency" | "category">
