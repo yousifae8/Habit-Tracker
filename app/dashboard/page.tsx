@@ -47,6 +47,7 @@ import { useRouter } from "next/navigation";
 const Dashboard = () => {
   const router = useRouter();
   const [activeHabits, setActiveHabits] = useState<Habit[]>([]);
+  const [userName, setUserName] = useState<string>("User");
   const [archivedHabits, setArchivedHabits] = useState<Habit[]>([]);
   const [view, setView] = useState<"active" | "archived">("active");
   const [loading, setLoading] = useState(true);
@@ -85,23 +86,34 @@ const Dashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const [activeHabitsData, archivedHabitsData, checkInsData, statsData, hStatsData] =
-        await Promise.all([
-          getHabits(true),
-          getHabits(false),
-          getCheckInsByDate(todayDate),
-          getSummaryStats(),
-          getHabitStats(),
-        ]);
+      const [
+        activeHabitsData,
+        archivedHabitsData,
+        checkInsData,
+        statsData,
+        hStatsData,
+        userData,
+      ] = await Promise.all([
+        getHabits(true),
+        getHabits(false),
+        getCheckInsByDate(todayDate),
+        getSummaryStats(),
+        getHabitStats(),
+        supabase.auth.getUser(),
+      ]);
       setActiveHabits(activeHabitsData ?? []);
       setArchivedHabits(archivedHabitsData ?? []);
       setCheckInsByHabitId(mapCheckInsByHabitId(checkInsData));
       setStats(statsData);
+      setUserName(userData.data.user?.user_metadata?.name || "User");
       setHabitStats(
-        hStatsData.reduce((acc: Record<string, HabitStats>, s: HabitStats) => {
-          acc[s.id] = s;
-          return acc;
-        }, {} as Record<string, HabitStats>),
+        hStatsData.reduce(
+          (acc: Record<string, HabitStats>, s: HabitStats) => {
+            acc[s.id] = s;
+            return acc;
+          },
+          {} as Record<string, HabitStats>,
+        ),
       );
     } catch (err) {
       const message =
@@ -323,200 +335,212 @@ const Dashboard = () => {
                   fontWeight: 800,
                   color: "primary.main",
                   letterSpacing: "-0.02em",
-                  background: "linear-gradient(45deg, #6366F1 30%, #4F46E5 90%)",
+                  background:
+                    "linear-gradient(45deg, #6366F1 30%, #4F46E5 90%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Habit Tracker
+                Welcome back, {userName}!
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontWeight: 500, opacity: 0.8 }}
+              >
                 {todayDateLabel}
               </Typography>
             </Box>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setIsCreateOpen(true)}
-              sx={{
-                borderRadius: 2,
-                px: 3,
-                textTransform: "none",
-                fontWeight: 600,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              }}
-            >
-              New Habit
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              startIcon={<LogoutIcon />}
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                borderColor: "rgba(0,0,0,0.12)",
-              }}
-            >
-              {isLoggingOut ? "Logout..." : "Logout"}
-            </Button>
-          </Box>
-        </Box>
-
-        {!loading && !error && (
-          <StatsOverview
-            completedToday={
-              Object.values(checkInsByHabitId).filter((c) => c.status).length
-            }
-            totalHabits={activeHabits.length}
-            currentStreak={stats.currentStreak}
-            totalCompletions={stats.totalCompletions}
-          />
-        )}
-
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-            <CircularProgress size={50} thickness={4.5} />
-          </Box>
-        ) : null}
-
-        {error ? (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-            {error}
-          </Alert>
-        ) : null}
-        {actionError ? (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-            {actionError}
-          </Alert>
-        ) : null}
-
-        {!loading && !error ? (
-          <Tabs
-            value={view}
-            onChange={(_, nextView) => setView(nextView)}
-            sx={{ mb: 2 }}
-          >
-            <Tab label={`Active (${activeHabits.length})`} value="active" />
-            <Tab label={`Archived (${archivedHabits.length})`} value="archived" />
-          </Tabs>
-        ) : null}
-
-        {!loading && !error && view === "active" ? (
-          activeHabits.length > 0 ? (
-            <Box sx={{ mt: 2 }}>
-              {activeHabits.map((habit) => (
-                <HabitCard
-                  key={habit.id}
-                  habit={habit}
-                  isDone={Boolean(checkInsByHabitId[habit.id]?.status)}
-                  onToggle={(nextStatus) =>
-                    handleToggleCheckIn(habit.id, nextStatus)
-                  }
-                  onEdit={() => setEditingHabit(habit)}
-                  onArchive={() => handleArchiveHabit(habit.id)}
-                  isToggling={togglingCheckInId === habit.id}
-                  isArchiving={archivingId === habit.id}
-                  streak={habitStats[habit.id]?.current_streak}
-                  totalCompletions={habitStats[habit.id]?.total_completions}
-                />
-              ))}
-            </Box>
-          ) : (
-            <Box
-              sx={{
-                textAlign: "center",
-                py: 10,
-                backgroundColor: "rgba(255,255,255,0.6)",
-                borderRadius: 4,
-                border: "2px dashed rgba(0,0,0,0.05)",
-              }}
-            >
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Your habits will appear here
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Consistency is key. Start by tracking your first daily goal.
-              </Typography>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setIsCreateOpen(true)}
+                sx={{
+                  borderRadius: 2,
+                  px: 3,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                }}
+              >
+                New Habit
+              </Button>
               <Button
                 variant="outlined"
-                onClick={() => setIsCreateOpen(true)}
-                sx={{ borderRadius: 2, textTransform: "none" }}
+                color="inherit"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  borderColor: "rgba(0,0,0,0.12)",
+                }}
               >
-                Get Started
+                {isLoggingOut ? "Logout..." : "Logout"}
               </Button>
             </Box>
-          )
-        ) : null}
+          </Box>
 
-        {!loading && !error && view === "archived" ? (
-          archivedHabits.length > 0 ? (
-            <Box sx={{ mt: 2, display: "grid", gap: 1.5 }}>
-              {archivedHabits.map((habit) => (
-                <Box
-                  key={habit.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: "rgba(255,255,255,0.7)",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {habit.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {habit.description || "No description"}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<RestoreFromTrashIcon />}
-                      onClick={() => handleRestoreHabit(habit.id)}
-                      disabled={restoringId === habit.id}
-                      sx={{ borderRadius: 2, textTransform: "none" }}
-                    >
-                      {restoringId === habit.id ? "Restoring..." : "Restore"}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => setHabitToDelete(habit)}
-                      disabled={deletingId === habit.id}
-                      sx={{ borderRadius: 2, textTransform: "none" }}
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                </Box>
-              ))}
+          {!loading && !error && (
+            <StatsOverview
+              completedToday={
+                Object.values(checkInsByHabitId).filter((c) => c.status).length
+              }
+              totalHabits={activeHabits.length}
+              currentStreak={stats.currentStreak}
+              totalCompletions={stats.totalCompletions}
+            />
+          )}
+
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+              <CircularProgress size={50} thickness={4.5} />
             </Box>
-          ) : (
-            <Box
-              sx={{
-                textAlign: "center",
-                py: 10,
-                backgroundColor: "rgba(255,255,255,0.6)",
-                borderRadius: 4,
-                border: "2px dashed rgba(0,0,0,0.05)",
-              }}
+          ) : null}
+
+          {error ? (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          ) : null}
+          {actionError ? (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {actionError}
+            </Alert>
+          ) : null}
+
+          {!loading && !error ? (
+            <Tabs
+              value={view}
+              onChange={(_, nextView) => setView(nextView)}
+              sx={{ mb: 2 }}
             >
-              <Typography variant="h6" color="text.secondary">
-                No archived habits
-              </Typography>
-            </Box>
-          )
-        ) : null}
-      </Container>
-    </Box>
+              <Tab label={`Active (${activeHabits.length})`} value="active" />
+              <Tab
+                label={`Archived (${archivedHabits.length})`}
+                value="archived"
+              />
+            </Tabs>
+          ) : null}
+
+          {!loading && !error && view === "active" ? (
+            activeHabits.length > 0 ? (
+              <Box sx={{ mt: 2 }}>
+                {activeHabits.map((habit) => (
+                  <HabitCard
+                    key={habit.id}
+                    habit={habit}
+                    isDone={Boolean(checkInsByHabitId[habit.id]?.status)}
+                    onToggle={(nextStatus) =>
+                      handleToggleCheckIn(habit.id, nextStatus)
+                    }
+                    onEdit={() => setEditingHabit(habit)}
+                    onArchive={() => handleArchiveHabit(habit.id)}
+                    isToggling={togglingCheckInId === habit.id}
+                    isArchiving={archivingId === habit.id}
+                    streak={habitStats[habit.id]?.current_streak}
+                    totalCompletions={habitStats[habit.id]?.total_completions}
+                  />
+                ))}
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 10,
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                  borderRadius: 4,
+                  border: "2px dashed rgba(0,0,0,0.05)",
+                }}
+              >
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Your habits will appear here
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 3 }}
+                >
+                  Consistency is key. Start by tracking your first daily goal.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsCreateOpen(true)}
+                  sx={{ borderRadius: 2, textTransform: "none" }}
+                >
+                  Get Started
+                </Button>
+              </Box>
+            )
+          ) : null}
+
+          {!loading && !error && view === "archived" ? (
+            archivedHabits.length > 0 ? (
+              <Box sx={{ mt: 2, display: "grid", gap: 1.5 }}>
+                {archivedHabits.map((habit) => (
+                  <Box
+                    key={habit.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 2,
+                      borderRadius: 2,
+                      backgroundColor: "rgba(255,255,255,0.7)",
+                      border: "1px solid rgba(0,0,0,0.08)",
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        {habit.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {habit.description || "No description"}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<RestoreFromTrashIcon />}
+                        onClick={() => handleRestoreHabit(habit.id)}
+                        disabled={restoringId === habit.id}
+                        sx={{ borderRadius: 2, textTransform: "none" }}
+                      >
+                        {restoringId === habit.id ? "Restoring..." : "Restore"}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => setHabitToDelete(habit)}
+                        disabled={deletingId === habit.id}
+                        sx={{ borderRadius: 2, textTransform: "none" }}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 10,
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                  borderRadius: 4,
+                  border: "2px dashed rgba(0,0,0,0.05)",
+                }}
+              >
+                <Typography variant="h6" color="text.secondary">
+                  No archived habits
+                </Typography>
+              </Box>
+            )
+          ) : null}
+        </Container>
+      </Box>
 
       <Dialog
         open={isCreateOpen}
@@ -563,12 +587,16 @@ const Dashboard = () => {
         <DialogTitle>Delete Habit?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to permanently delete <strong>{habitToDelete?.name}</strong>? 
-            This action cannot be undone and all historical data will be lost.
+            Are you sure you want to permanently delete{" "}
+            <strong>{habitToDelete?.name}</strong>? This action cannot be undone
+            and all historical data will be lost.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setHabitToDelete(null)} disabled={Boolean(deletingId)}>
+          <Button
+            onClick={() => setHabitToDelete(null)}
+            disabled={Boolean(deletingId)}
+          >
             Cancel
           </Button>
           <Button
