@@ -71,7 +71,7 @@ const Register = () => {
           console.log(error.message);
           return;
         }
-        router.push("/signin");
+        router.push("/login");
       } catch (error) {
         console.error(error);
       }
