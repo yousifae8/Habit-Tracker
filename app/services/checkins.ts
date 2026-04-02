@@ -187,7 +187,6 @@ export const getHabitStats = async () => {
     s.total++;
     s.seenDates.add(ci.checkin_date);
 
-    // Streak calculation
     if (s.streak === 0) {
       if (ci.checkin_date === today || ci.checkin_date === yesterday) {
         s.streak = 1;
@@ -225,7 +224,6 @@ export const getSummaryStats = async () => {
   if (userError) throw userError;
   if (!user) throw new Error("User not found");
 
-  // Fetch all successful check-ins to calculate total and streaks
   const { data, error } = await supabase
     .from("checkins")
     .select("checkin_date, status")
@@ -238,7 +236,6 @@ export const getSummaryStats = async () => {
   const checkIns = data ?? [];
   const totalCompletions = checkIns.length;
 
-  // Quick streak calculation (current streak)
   let currentStreak = 0;
   if (checkIns.length > 0) {
     const today = new Date().toISOString().slice(0, 10);
@@ -248,7 +245,6 @@ export const getSummaryStats = async () => {
 
     let lastDate = checkIns[0].checkin_date;
 
-    // Check if user has checked in today or yesterday to maintain the streak
     if (lastDate === today || lastDate === yesterday) {
       currentStreak = 1;
       const seenDates = new Set([lastDate]);

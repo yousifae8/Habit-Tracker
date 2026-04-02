@@ -20,14 +20,21 @@ const StatCard = ({ title, value, subValue, icon, color, progress }: any) => (
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
-      borderRadius: "inherit", // Inherits from paper/card overrides if set, or just use number
+      borderRadius: "inherit",
       boxShadow: (theme) => theme.shadows[1],
       backgroundColor: "background.paper",
       border: "1px solid",
       borderColor: "divider",
     }}
   >
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        mb: 2,
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -44,11 +51,20 @@ const StatCard = ({ title, value, subValue, icon, color, progress }: any) => (
       </Typography>
     </Box>
     <Box>
-      <Typography variant="subtitle2" color="text.secondary" fontWeight="medium" gutterBottom>
+      <Typography
+        variant="subtitle2"
+        color="text.secondary"
+        fontWeight="medium"
+        gutterBottom
+      >
         {title}
       </Typography>
       {subValue && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mb: 1 }}
+        >
           {subValue}
         </Typography>
       )}
@@ -79,7 +95,8 @@ export default function StatsOverview({
   currentStreak,
   totalCompletions,
 }: StatsOverviewProps) {
-  const progressValue = totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
+  const progressValue =
+    totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -87,9 +104,13 @@ export default function StatsOverview({
         <StatCard
           title="Today's Progress"
           value={`${completedToday}/${totalHabits}`}
-          subValue={totalHabits > 0 ? `${Math.round(progressValue)}% completed` : "No habits added"}
+          subValue={
+            totalHabits > 0
+              ? `${Math.round(progressValue)}% completed`
+              : "No habits added"
+          }
           icon={<TodayIcon />}
-          color="#6366F1" // Indigo Breeze Primary
+          color="#6366F1"
           progress={progressValue}
         />
       </Grid>
@@ -99,7 +120,7 @@ export default function StatsOverview({
           value={`${currentStreak} days`}
           subValue="Keep it going!"
           icon={<LocalFireDepartmentIcon />}
-          color="#F59E0B" // Amber for streaks
+          color="#F59E0B"
         />
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
@@ -108,7 +129,7 @@ export default function StatsOverview({
           value={totalCompletions}
           subValue="All-time stats"
           icon={<CheckCircleIcon />}
-          color="#10B981" // Indigo Breeze Success (Emerald)
+          color="#10B981"
         />
       </Grid>
     </Grid>
