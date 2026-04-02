@@ -2,7 +2,7 @@
 
 import styles from "./page.module.css";
 import Link from "next/link";
-import { Button ,Typography} from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { TextField } from "@mui/material";
 import { Container, Box } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
@@ -21,16 +21,6 @@ const Register = () => {
       .min(2, "Name must be at least 2 characters")
       .matches(/^[A-Za-z\s]+$/, "Name can only contain letters and spaces")
       .required("Name is required"),
-
-    username: yup
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(20, "Username must not exceed 20 characters")
-      .matches(
-        /^[a-zA-Z0-9_]+$/,
-        "Username can only contain letters, numbers, and underscores",
-      )
-      .required("Username is required"),
 
     email: yup
       .string()
@@ -60,7 +50,6 @@ const Register = () => {
   const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
-      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -75,7 +64,6 @@ const Register = () => {
           options: {
             data: {
               name: values.name,
-              username: values.username,
             },
           },
         });
@@ -92,7 +80,6 @@ const Register = () => {
 
   type FormValues = {
     name: string;
-    username: string;
     email: string;
     password: string;
     confirmPassword: string;
@@ -118,7 +105,7 @@ const Register = () => {
           <Typography fontSize={32} sx={{ textAlign: "center" }}>
             Register
           </Typography>
-        </Box>  
+        </Box>
         <form onSubmit={formik.handleSubmit}>
           <Grid
             container
@@ -137,24 +124,6 @@ const Register = () => {
                   onChange={formik.handleChange}
                   error={formik.touched.name && Boolean(formik.errors.name)}
                   helperText={formik.touched.name && formik.errors.name}
-                  onBlur={formik.handleBlur}
-                />
-              </Box>
-            </Grid>
-            <Grid size={6}>
-              <Box>
-                <TextField
-                  required
-                  variant="outlined"
-                  id="outlined-username-input"
-                  label="Username"
-                  name="username"
-                  value={formik.values.username}
-                  onChange={formik.handleChange}
-                  error={
-                    formik.touched.username && Boolean(formik.errors.username)
-                  }
-                  helperText={formik.touched.username && formik.errors.username}
                   onBlur={formik.handleBlur}
                 />
               </Box>
@@ -240,16 +209,18 @@ const Register = () => {
               type="submit"
               color="primary"
               variant="contained"
-              sx={{  marginTop: 5 }}
+              sx={{ marginTop: 5 }}
               fullWidth
               disabled={!formik.isValid || formik.isSubmitting}
             >
               Submit
             </Button>
           </Box>
-            <Box sx={{mt:1}}>
-                                 <Typography>Have an account?<Link href={"/login"}>login</Link></Typography> 
-                              </Box>
+          <Box sx={{ mt: 1 }}>
+            <Typography>
+              Have an account?<Link href={"/login"}>login</Link>
+            </Typography>
+          </Box>
         </form>
       </Box>
     </Container>
