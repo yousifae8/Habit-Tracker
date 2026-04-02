@@ -101,7 +101,7 @@ const Register = () => {
           paddingTop: 5,
         }}
       >
-        <Box sx={{ textAlign: "center", mb: 3 }}>
+        <Box sx={{ textAlign: "center", mb: 10 }}>
           <Typography fontSize={32} sx={{ textAlign: "center" }}>
             Register
           </Typography>
@@ -112,7 +112,7 @@ const Register = () => {
             rowSpacing={5}
             columnSpacing={{ xs: 1, sm: 2, md: 3 }}
           >
-            <Grid size={6}>
+            <Grid size={6} sx={{ mb: 3 }}>
               <Box>
                 <TextField
                   required
